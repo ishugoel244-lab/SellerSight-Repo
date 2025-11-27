@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useRef } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 
 import Header from "@/components/ui/Header";
@@ -26,17 +26,26 @@ const PROMPTS = [
 ];
 
 export default function Page() {
-  const { messages, input, handleInputChange, handleSubmit, isLoading, setMessages } =
-    useChat();
+  // ✅ New AI SDK v5 useChat signature – no `input` here
+  const { messages, sendMessage, status, setMessages } = useChat();
+
+  // ✅ Manage input ourselves
+  const [input, setInput] = useState("");
+
+  // derive loading state from status
+  const isLoading = status === "submitted" || status === "streaming";
 
   const formRef = useRef<HTMLFormElement | null>(null);
 
   const onClearChat = () => setMessages([]);
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!input.trim()) return;
-    handleSubmit(e);
+
+    // send the user message to the chat API
+    await sendMessage(input);
+    setInput("");
   };
 
   const welcomeText =
@@ -45,15 +54,15 @@ export default function Page() {
 
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-white via-[#f5f7fb] to-[#e7f1ff] text-slate-900">
-      {/* GLOBAL TOP NAV WITH LOGO (your existing component) */}
+      {/* Top nav bar with your logo / brand */}
       <Header />
 
-      {/* MAIN CONTENT AREA */}
+      {/* Main content */}
       <main className="flex-1 flex justify-center px-4 py-8">
         <div className="grid w-full max-w-6xl gap-6 md:grid-cols-[minmax(0,2.3fr)_minmax(260px,1fr)]">
-          {/* ========= LEFT: CHAT CARD ========= */}
+          {/* ========== LEFT: CHAT CARD ========== */}
           <section className="flex flex-col rounded-2xl bg-white/95 shadow-lg border border-slate-100 overflow-hidden">
-            {/* Chat card header */}
+            {/* Chat header inside card */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white">
               <div className="flex items-center gap-3">
                 <Avatar className="h-9 w-9 bg-slate-900 text-white">
@@ -90,7 +99,7 @@ export default function Page() {
 
             {/* Messages area */}
             <div className="flex-1 min-h-[320px] max-h-[65vh] overflow-y-auto bg-slate-50/80 px-6 py-4 space-y-4">
-              {/* Welcome bubble when there’s no conversation yet */}
+              {/* Welcome bubble when empty */}
               {!messages.length && (
                 <div className="flex gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-white text-sm">
@@ -122,7 +131,7 @@ export default function Page() {
               >
                 <Input
                   value={input}
-                  onChange={handleInputChange}
+                  onChange={(e) => setInput(e.target.value)}
                   placeholder="Ask SellerSight about your ASIN’s reviews, complaints, or competitors…"
                   className="flex-1 rounded-full bg-slate-50 border-slate-200 text-sm"
                 />
@@ -137,9 +146,8 @@ export default function Page() {
             </div>
           </section>
 
-          {/* ========= RIGHT: CONTEXT / HELP PANEL ========= */}
+          {/* ========== RIGHT: CONTEXT / HELP PANEL ========== */}
           <aside className="flex flex-col gap-4">
-            {/* What SellerSight does */}
             <Card className="bg-white/95 border-slate-100 shadow-md">
               <CardContent className="px-5 py-4">
                 <h2 className="text-sm font-semibold mb-2">
@@ -154,7 +162,6 @@ export default function Page() {
               </CardContent>
             </Card>
 
-            {/* Quick prompts */}
             <Card className="bg-white/95 border-slate-100 shadow-md">
               <CardContent className="px-5 py-4">
                 <h2 className="text-sm font-semibold mb-2">
@@ -173,7 +180,6 @@ export default function Page() {
               </CardContent>
             </Card>
 
-            {/* Small note */}
             <Card className="bg-slate-900 text-slate-50 border-slate-900 shadow-md">
               <CardContent className="px-5 py-4">
                 <p className="text-xs leading-relaxed">
