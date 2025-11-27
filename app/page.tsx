@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useRef } from "react";
-import { useChat } from "ai/react"; // or "@ai-sdk/react" – keep whatever you already use
+import { useChat } from "ai/react"; // keep this the same as in your repo
 
 import Header from "@/components/ui/Header";
 import { MessageWall } from "@/components/messages/message-wall";
@@ -19,7 +19,7 @@ import {
 } from "@/config";
 
 export default function Page() {
-  // keep your original hook API, but relax TS with `as any`
+  // useChat typed as any so TS doesn’t complain about input / helpers
   const {
     messages,
     input,
@@ -41,17 +41,17 @@ export default function Page() {
 
   const welcomeText =
     WELCOME_MESSAGE ||
-    `Welcome to SellerSight ⚡ An advanced AI system engineered to analyze real customer feedback, uncover hidden performance drivers, and forecast the outcomes of inaction. I evaluate sentiment signals, competitive positioning, issue severity, and trajectory shifts to reveal the most decisive improvement opportunities.`;
+    Welcome to SellerSight ⚡ An advanced AI system engineered to analyze real customer feedback, uncover hidden performance drivers, and forecast the outcomes of inaction. I evaluate sentiment signals, competitive positioning, issue severity, and trajectory shifts to reveal the most decisive improvement opportunities.;
 
   return (
     <div className="flex min-h-screen flex-col bg-[#f6f7fb] text-slate-900">
-      {/* Top dark nav with logo */}
+      {/* Top dark bar with logo + title (your existing component) */}
       <Header />
 
-      {/* Main full-page chat layout */}
-      <main className="flex-1 flex flex-col items-center">
-        {/* Top chat header bar (not a floating card) */}
-        <div className="w-full max-w-6xl px-6 pt-6 pb-2">
+      {/* MAIN CHAT LAYOUT – full page, like Poe */}
+      <main className="flex-1 flex justify-center">
+        <div className="w-full max-w-6xl flex flex-col px-6 pt-6 pb-8 gap-4">
+          {/* Top chat header strip (no big floating card) */}
           <div className="flex items-center justify-between rounded-2xl bg-white shadow-sm border border-slate-200 px-6 py-4">
             <div className="flex items-center gap-3">
               <Avatar className="h-9 w-9 bg-slate-900 text-white">
@@ -64,6 +64,7 @@ export default function Page() {
                 </p>
               </div>
             </div>
+
             <div className="flex items-center gap-3">
               <Button
                 type="button"
@@ -82,55 +83,56 @@ export default function Page() {
               </Button>
             </div>
           </div>
-        </div>
 
-        {/* Messages area – full width under the header, NOT a centered bubble */}
-        <div className="w-full max-w-6xl flex-1 flex flex-col px-6 pb-4">
-          <div className="flex-1 rounded-2xl bg-white shadow-sm border border-slate-200 px-6 py-4 overflow-y-auto">
-            {/* Welcome bubble at top */}
-            {!messages.length && (
-              <div className="mb-4 flex gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-white text-sm">
-                  SS
+          {/* MAIN CHAT PANEL – fills width, not a tiny centered bubble */}
+          <div className="flex-1 flex flex-col rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
+            {/* Messages area */}
+            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 bg-slate-50/60">
+              {/* Welcome bubble at top when there are no messages */}
+              {!messages.length && (
+                <div className="flex gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-white text-sm">
+                    SS
+                  </div>
+                  <Card className="max-w-xl rounded-2xl bg-amber-50 border-amber-100">
+                    <CardContent className="px-4 py-3">
+                      <p className="text-sm leading-relaxed text-slate-800">
+                        {welcomeText}
+                      </p>
+                    </CardContent>
+                  </Card>
                 </div>
-                <Card className="max-w-xl rounded-2xl bg-amber-50 border-amber-100">
-                  <CardContent className="px-4 py-3">
-                    <p className="text-sm leading-relaxed text-slate-800">
-                      {welcomeText}
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
+              )}
 
-            <MessageWall
-              messages={messages}
-              ownerName={OWNER_NAME || "You"}
-              aiName={AI_NAME || "SellerSight"}
-            />
-          </div>
-
-          {/* Big pill input bar like Poe, sitting below the chat box */}
-          <div className="mt-4 pb-4">
-            <form
-              ref={formRef}
-              onSubmit={onSubmit}
-              className="flex items-center gap-3 rounded-full bg-white shadow-sm border border-slate-300 px-4 py-2"
-            >
-              <Input
-                value={input}
-                onChange={handleInputChange}
-                placeholder="Ask SellerSight about your ASIN's reviews…"
-                className="flex-1 border-none bg-transparent text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
+              <MessageWall
+                messages={messages}
+                ownerName={OWNER_NAME || "You"}
+                aiName={AI_NAME || "SellerSight"}
               />
-              <Button
-                type="submit"
-                disabled={isLoading || !input?.trim()}
-                className="h-9 w-9 rounded-full bg-amber-400 text-slate-900 hover:bg-amber-500 disabled:opacity-60 flex items-center justify-center p-0"
+            </div>
+
+            {/* Input bar – big pill inside the panel bottom, like Poe */}
+            <div className="border-t border-slate-200 bg-white px-4 py-3">
+              <form
+                ref={formRef}
+                onSubmit={onSubmit}
+                className="flex items-center gap-3 rounded-full bg-slate-50 border border-slate-200 px-4 py-2"
               >
-                ↑
-              </Button>
-            </form>
+                <Input
+                  value={input}
+                  onChange={handleInputChange}
+                  placeholder="Ask SellerSight about your ASIN's reviews…"
+                  className="flex-1 border-none bg-transparent text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
+                <Button
+                  type="submit"
+                  disabled={isLoading || !input?.trim()}
+                  className="h-9 w-9 rounded-full bg-amber-400 text-slate-900 hover:bg-amber-500 disabled:opacity-60 flex items-center justify-center p-0"
+                >
+                  ↑
+                </Button>
+              </form>
+            </div>
           </div>
         </div>
       </main>
