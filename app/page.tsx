@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useRef } from "react";
-import { useChat } from "ai/react"; // if your repo uses "@ai-sdk/react", change this import path
+import { useChat } from "@ai-sdk/react"; // if your repo uses "@ai-sdk/react", change this import path
 
 import Header from "@/components/ui/Header";
 import { MessageWall } from "@/components/messages/message-wall";
