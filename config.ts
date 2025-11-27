@@ -34,8 +34,7 @@ export const OWNER_NAME = "Manushi and Ishita (BITSoM MBA Co’26)";
 
 export const WELCOME_MESSAGE = `
 Welcome to SellerSight ⚡
-An advanced AI system engineered to analyze real customer feedback, uncover hidden performance drivers, and forecast the outcomes of inaction.
-I evaluate sentiment signals, competitive positioning, issue severity, and trajectory shifts to reveal the most decisive improvement opportunities.
+AI intelligence system built for Amazon and e-commerce sellers. I analyze real customer feedback, uncover performance drivers, and forecast the cost of inaction by evaluating sentiment trends, competitive gaps, issue severity, and trajectory shifts to surface decisive opportunities for growth.
 `;
 
 export const CLEAR_CHAT_TEXT = "New Analysis";
