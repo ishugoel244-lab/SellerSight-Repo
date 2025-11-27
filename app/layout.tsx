@@ -12,12 +12,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// 🔥 Updated metadata with dynamic title + icons
+// 🔥 FINAL FIXED METADATA
 export const metadata: Metadata = {
-  title: {
-    default: "SellerSight",
-    template: "%s · SellerSight",
-  },
+  title: "SellerSight — Amazon Review Intelligence for Sellers",
   description:
     "AI-powered review insights, sentiment analysis, and competitor intelligence for Amazon sellers.",
   keywords: [
@@ -26,11 +23,12 @@ export const metadata: Metadata = {
     "Sentiment analysis",
     "Ecommerce analytics",
     "AI for Amazon sellers",
+    "SellerSight",
   ],
   icons: {
-    icon: "/sellersight-logo.png",
-    shortcut: "/sellersight-logo.png",
-    apple: "/sellersight-logo.png",
+    icon: "/logo.png", // Browser tab icon
+    appleTouchIcon: "/logo.png", // iOS Home Screen
+    shortcut: "/logo.png",
   },
 };
 
