@@ -1,9 +1,9 @@
 "use client";
 
 import { FormEvent, useRef } from "react";
-import { useChat } from "@ai-sdk/react"; // if your repo uses "@ai-sdk/react", change this import path
+import { useChat } from "@ai-sdk/react";
 
-import Header from "@/components/ui/Header";
+import Header from "@/components/ui/header"; // 🔥 FIXED PATH (lowercase)
 import { MessageWall } from "@/components/messages/message-wall";
 
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,6 @@ import {
 } from "@/config";
 
 export default function Page() {
-  // useChat typed as any so TS doesn't complain about helpers like `input`
   const {
     messages,
     input,
@@ -43,24 +42,23 @@ export default function Page() {
 
   const welcomeText =
     WELCOME_MESSAGE ||
-    `Welcome to SellerSight ⚡ An advanced AI system engineered to analyze real customer feedback, uncover hidden performance drivers, and forecast the outcomes of inaction. I evaluate sentiment signals, competitive positioning, issue severity, and trajectory shifts to reveal the most decisive improvement opportunities.`;
+    `Welcome to SellerSight ⚡ An advanced AI system engineered to analyze real customer feedback, uncover hidden performance drivers, and forecast the outcomes of inaction.`;
 
   return (
     <div className="flex min-h-screen flex-col bg-[#f6f7fb] text-slate-900">
-      {/* Top dark nav with logo + tagline */}
       <Header />
 
-      {/* Full-page chat layout */}
       <main className="flex-1 flex justify-center">
         <div className="w-full max-w-6xl flex flex-col px-6 pt-6 pb-8 gap-4">
-          {/* Top chat header strip */}
+
+          {/* Chat Header */}
           <div className="flex items-center justify-between rounded-2xl bg-white shadow-sm border border-slate-200 px-6 py-4">
             <div className="flex items-center gap-3">
               <Avatar className="h-9 w-9 bg-slate-900 text-white">
                 <AvatarFallback className="font-semibold">SS</AvatarFallback>
               </Avatar>
               <div>
-                <h1 className="text-lg font-semibold">Chat with SellerSight</h1>
+                <h1 className="text-lg font-semibold">Chat with {AI_NAME}</h1>
                 <p className="text-xs text-slate-500">
                   Amazon Review Intelligence for Sellers
                 </p>
@@ -74,7 +72,7 @@ export default function Page() {
                 className="rounded-full border-slate-300 px-4 py-1 text-xs font-medium"
                 onClick={onClearChat}
               >
-                {CLEAR_CHAT_TEXT || "Clear chat"}
+                {CLEAR_CHAT_TEXT}
               </Button>
               <Button
                 type="button"
@@ -86,11 +84,12 @@ export default function Page() {
             </div>
           </div>
 
-          {/* Main chat panel */}
+          {/* Chat Panel */}
           <div className="flex-1 flex flex-col rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
-            {/* Messages area */}
+
+            {/* Messages */}
             <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 bg-slate-50/60">
-              {/* Welcome bubble at top if no messages yet */}
+
               {!messages.length && (
                 <div className="flex gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-white text-sm">
@@ -108,12 +107,12 @@ export default function Page() {
 
               <MessageWall
                 messages={messages}
-                ownerName={OWNER_NAME || "You"}
-                aiName={AI_NAME || "SellerSight"}
+                ownerName={OWNER_NAME}
+                aiName={AI_NAME}
               />
             </div>
 
-            {/* Input bar – wide pill like Poe */}
+            {/* Input Bar */}
             <div className="border-t border-slate-200 bg-white px-4 py-3">
               <form
                 ref={formRef}
@@ -123,18 +122,19 @@ export default function Page() {
                 <Input
                   value={input}
                   onChange={handleInputChange}
-                  placeholder="Ask SellerSight about your ASIN's reviews…"
+                  placeholder="Ask SellerSight about your ASIN’s reviews…"
                   className="flex-1 border-none bg-transparent text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
                 <Button
                   type="submit"
-                  disabled={isLoading || !input || !input.trim()}
+                  disabled={isLoading || !input?.trim()}
                   className="h-9 w-9 rounded-full bg-amber-400 text-slate-900 hover:bg-amber-500 disabled:opacity-60 flex items-center justify-center p-0"
                 >
                   ↑
                 </Button>
               </form>
             </div>
+
           </div>
         </div>
       </main>
