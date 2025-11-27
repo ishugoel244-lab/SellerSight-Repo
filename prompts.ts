@@ -446,5 +446,3 @@ ${CONVERSATION_FLOW_PROMPT}
 ${DATE_AND_TIME}
 </date_time>
 `;
-
-make the prompt shorter, it should not be more than 2-3 lines
