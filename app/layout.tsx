@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 // 🔥 Updated metadata with dynamic title + icons
 export const metadata: Metadata = {
   title: {
-    default: "SellerSight — Amazon Review Intelligence",
+    default: "SellerSight",
     template: "%s · SellerSight",
   },
   description:
