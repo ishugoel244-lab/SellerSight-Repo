@@ -82,7 +82,6 @@ export async function POST(req: Request) {
 
     providerOptions: {
       openai: {
-        apiKey: OPENAI_API_KEY,
         parallelToolCalls: false,
       },
     },
