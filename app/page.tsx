@@ -3,7 +3,6 @@
 import { FormEvent, useRef } from "react";
 import { useChat } from "@ai-sdk/react";
 
-import Header from "@/components/ui/header"; // 🔥 FIXED PATH (lowercase)
 import { MessageWall } from "@/components/messages/message-wall";
 
 import { Button } from "@/components/ui/button";
@@ -36,29 +35,39 @@ export default function Page() {
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!input || !input.trim()) return;
+    if (!input.trim()) return;
     handleSubmit(e);
   };
 
   const welcomeText =
     WELCOME_MESSAGE ||
-    `Welcome to SellerSight ⚡ An advanced AI system engineered to analyze real customer feedback, uncover hidden performance drivers, and forecast the outcomes of inaction.`;
+    `Welcome to SellerSight ⚡ We analyze review data to uncover opportunities and weaknesses.`;
 
   return (
     <div className="flex min-h-screen flex-col bg-[#f6f7fb] text-slate-900">
-      <Header />
 
+      {/* 🔹 Top bar directly included, not imported */}
+      <div className="w-full flex justify-between items-center bg-[#212836] text-white px-6 py-3">
+        <div className="flex items-center gap-2 text-lg font-semibold">
+          <img src="/logo.png" alt="SellerSight Logo" className="h-7 w-auto" />
+          SellerSight
+        </div>
+        <p className="text-sm text-amber-300">
+          Amazon Review Intelligence for Sellers
+        </p>
+      </div>
+
+      {/* Chat Page */}
       <main className="flex-1 flex justify-center">
         <div className="w-full max-w-6xl flex flex-col px-6 pt-6 pb-8 gap-4">
 
-          {/* Chat Header */}
           <div className="flex items-center justify-between rounded-2xl bg-white shadow-sm border border-slate-200 px-6 py-4">
             <div className="flex items-center gap-3">
               <Avatar className="h-9 w-9 bg-slate-900 text-white">
                 <AvatarFallback className="font-semibold">SS</AvatarFallback>
               </Avatar>
               <div>
-                <h1 className="text-lg font-semibold">Chat with {AI_NAME}</h1>
+                <h1 className="text-lg font-semibold">Chat with SellerSight</h1>
                 <p className="text-xs text-slate-500">
                   Amazon Review Intelligence for Sellers
                 </p>
@@ -70,74 +79,4 @@ export default function Page() {
                 type="button"
                 variant="outline"
                 className="rounded-full border-slate-300 px-4 py-1 text-xs font-medium"
-                onClick={onClearChat}
-              >
-                {CLEAR_CHAT_TEXT}
-              </Button>
-              <Button
-                type="button"
-                className="rounded-full bg-slate-900 px-4 py-1 text-xs font-medium text-white hover:bg-slate-800"
-                onClick={onClearChat}
-              >
-                + New Analysis
-              </Button>
-            </div>
-          </div>
-
-          {/* Chat Panel */}
-          <div className="flex-1 flex flex-col rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
-
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 bg-slate-50/60">
-
-              {!messages.length && (
-                <div className="flex gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-white text-sm">
-                    SS
-                  </div>
-                  <Card className="max-w-xl rounded-2xl bg-amber-50 border-amber-100">
-                    <CardContent className="px-4 py-3">
-                      <p className="text-sm leading-relaxed text-slate-800">
-                        {welcomeText}
-                      </p>
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
-
-              <MessageWall
-                messages={messages}
-                ownerName={OWNER_NAME}
-                aiName={AI_NAME}
-              />
-            </div>
-
-            {/* Input Bar */}
-            <div className="border-t border-slate-200 bg-white px-4 py-3">
-              <form
-                ref={formRef}
-                onSubmit={onSubmit}
-                className="flex items-center gap-3 rounded-full bg-slate-50 border border-slate-200 px-4 py-2"
-              >
-                <Input
-                  value={input}
-                  onChange={handleInputChange}
-                  placeholder="Ask SellerSight about your ASIN’s reviews…"
-                  className="flex-1 border-none bg-transparent text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
-                />
-                <Button
-                  type="submit"
-                  disabled={isLoading || !input?.trim()}
-                  className="h-9 w-9 rounded-full bg-amber-400 text-slate-900 hover:bg-amber-500 disabled:opacity-60 flex items-center justify-center p-0"
-                >
-                  ↑
-                </Button>
-              </form>
-            </div>
-
-          </div>
-        </div>
-      </main>
-    </div>
-  );
-}
+                onClick={onClearChat
