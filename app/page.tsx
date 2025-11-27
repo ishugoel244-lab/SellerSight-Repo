@@ -1,8 +1,9 @@
 "use client";
 
 import { FormEvent, useRef } from "react";
-import { useChat } from "@ai-sdk/react";
+import { useChat } from "@ai-sdk/react"; // AI chat hook
 
+import Header from "@/components/ui/header"; // fixed lowercase path
 import { MessageWall } from "@/components/messages/message-wall";
 
 import { Button } from "@/components/ui/button";
@@ -18,49 +19,32 @@ import {
 } from "@/config";
 
 export default function Page() {
-  const {
-    messages,
-    input,
-    handleInputChange,
-    handleSubmit,
-    isLoading,
-    setMessages,
-  } = useChat() as any;
+  const { messages, input, handleInputChange, handleSubmit, isLoading, setMessages } =
+    useChat() as any;
 
   const formRef = useRef<HTMLFormElement | null>(null);
 
-  const onClearChat = () => {
-    setMessages([]);
-  };
+  const onClearChat = () => setMessages([]);
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input?.trim()) return;
     handleSubmit(e);
   };
 
   const welcomeText =
     WELCOME_MESSAGE ||
-    `Welcome to SellerSight ⚡ We analyze review data to uncover opportunities and weaknesses.`;
+    `Welcome to SellerSight ⚡ I analyze real customer feedback, uncover root causes impacting ratings, 
+     identify competitive gaps, and forecast rating shifts to reveal your most decisive improvement opportunities.`;
 
   return (
     <div className="flex min-h-screen flex-col bg-[#f6f7fb] text-slate-900">
+      {/* Top Navigation */}
+      <Header />
 
-      {/* 🔹 Top bar directly included, not imported */}
-      <div className="w-full flex justify-between items-center bg-[#212836] text-white px-6 py-3">
-        <div className="flex items-center gap-2 text-lg font-semibold">
-          <img src="/logo.png" alt="SellerSight Logo" className="h-7 w-auto" />
-          SellerSight
-        </div>
-        <p className="text-sm text-amber-300">
-          Amazon Review Intelligence for Sellers
-        </p>
-      </div>
-
-      {/* Chat Page */}
       <main className="flex-1 flex justify-center">
         <div className="w-full max-w-6xl flex flex-col px-6 pt-6 pb-8 gap-4">
-
+          {/* Chat header */}
           <div className="flex items-center justify-between rounded-2xl bg-white shadow-sm border border-slate-200 px-6 py-4">
             <div className="flex items-center gap-3">
               <Avatar className="h-9 w-9 bg-slate-900 text-white">
@@ -79,4 +63,15 @@ export default function Page() {
                 type="button"
                 variant="outline"
                 className="rounded-full border-slate-300 px-4 py-1 text-xs font-medium"
-                onClick={onClearChat
+                onClick={onClearChat}
+              >
+                {CLEAR_CHAT_TEXT || "Clear chat"}
+              </Button>
+
+              <Button
+                type="button"
+                className="rounded-full bg-slate-900 px-4 py-1 text-xs font-medium text-white hover:bg-slate-800"
+                onClick={onClearChat}
+              >
+                + New Analysis
+              </Button>
