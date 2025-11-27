@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useRef } from "react";
-import { useChat } from "ai/react"; // keep this the same as in your repo
+import { useChat } from "ai/react"; // if your repo uses "@ai-sdk/react", change this import path
 
 import Header from "@/components/ui/Header";
 import { MessageWall } from "@/components/messages/message-wall";
@@ -19,7 +19,7 @@ import {
 } from "@/config";
 
 export default function Page() {
-  // useChat typed as any so TS doesn’t complain about input / helpers
+  // useChat typed as any so TS doesn't complain about helpers like `input`
   const {
     messages,
     input,
@@ -31,27 +31,29 @@ export default function Page() {
 
   const formRef = useRef<HTMLFormElement | null>(null);
 
-  const onClearChat = () => setMessages([]);
+  const onClearChat = () => {
+    setMessages([]);
+  };
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!input?.trim()) return;
+    if (!input || !input.trim()) return;
     handleSubmit(e);
   };
 
   const welcomeText =
     WELCOME_MESSAGE ||
-    Welcome to SellerSight ⚡ An advanced AI system engineered to analyze real customer feedback, uncover hidden performance drivers, and forecast the outcomes of inaction. I evaluate sentiment signals, competitive positioning, issue severity, and trajectory shifts to reveal the most decisive improvement opportunities.;
+    `Welcome to SellerSight ⚡ An advanced AI system engineered to analyze real customer feedback, uncover hidden performance drivers, and forecast the outcomes of inaction. I evaluate sentiment signals, competitive positioning, issue severity, and trajectory shifts to reveal the most decisive improvement opportunities.`;
 
   return (
     <div className="flex min-h-screen flex-col bg-[#f6f7fb] text-slate-900">
-      {/* Top dark bar with logo + title (your existing component) */}
+      {/* Top dark nav with logo + tagline */}
       <Header />
 
-      {/* MAIN CHAT LAYOUT – full page, like Poe */}
+      {/* Full-page chat layout */}
       <main className="flex-1 flex justify-center">
         <div className="w-full max-w-6xl flex flex-col px-6 pt-6 pb-8 gap-4">
-          {/* Top chat header strip (no big floating card) */}
+          {/* Top chat header strip */}
           <div className="flex items-center justify-between rounded-2xl bg-white shadow-sm border border-slate-200 px-6 py-4">
             <div className="flex items-center gap-3">
               <Avatar className="h-9 w-9 bg-slate-900 text-white">
@@ -84,11 +86,11 @@ export default function Page() {
             </div>
           </div>
 
-          {/* MAIN CHAT PANEL – fills width, not a tiny centered bubble */}
+          {/* Main chat panel */}
           <div className="flex-1 flex flex-col rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
             {/* Messages area */}
             <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 bg-slate-50/60">
-              {/* Welcome bubble at top when there are no messages */}
+              {/* Welcome bubble at top if no messages yet */}
               {!messages.length && (
                 <div className="flex gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-white text-sm">
@@ -111,7 +113,7 @@ export default function Page() {
               />
             </div>
 
-            {/* Input bar – big pill inside the panel bottom, like Poe */}
+            {/* Input bar – wide pill like Poe */}
             <div className="border-t border-slate-200 bg-white px-4 py-3">
               <form
                 ref={formRef}
@@ -126,7 +128,7 @@ export default function Page() {
                 />
                 <Button
                   type="submit"
-                  disabled={isLoading || !input?.trim()}
+                  disabled={isLoading || !input || !input.trim()}
                   className="h-9 w-9 rounded-full bg-amber-400 text-slate-900 hover:bg-amber-500 disabled:opacity-60 flex items-center justify-center p-0"
                 >
                   ↑
