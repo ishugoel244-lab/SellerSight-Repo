@@ -1,197 +1,246 @@
 "use client";
 
-import { FormEvent, useRef, useState } from "react";
-import { useChat } from "@ai-sdk/react";
-
-import Header from "@/components/ui/Header";
-import { MessageWall } from "@/components/messages/message-wall";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Card, CardContent } from "@/components/ui/card";
+import { useChat } from "@ai-sdk/react";
+import { ArrowUp, Loader2, Plus, Square } from "lucide-react";
+import { MessageWall } from "@/components/messages/message-wall";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UIMessage } from "ai";
+import { useEffect, useState, useRef } from "react";
+import { AI_NAME, CLEAR_CHAT_TEXT, OWNER_NAME, WELCOME_MESSAGE } from "@/config";
+import Link from "next/link";
 
-import {
-  AI_NAME,
-  CLEAR_CHAT_TEXT,
-  OWNER_NAME,
-  WELCOME_MESSAGE,
-} from "@/config";
+const formSchema = z.object({
+  message: z
+    .string()
+    .min(1, "Message cannot be empty.")
+    .max(2000, "Message must be at most 2000 characters."),
+});
 
-const PROMPTS = [
-  "Compare my ASIN with the top 3 competitors based on reviews.",
-  "Summarize the top complaints for this ASIN and their impact.",
-  "Tell me what customers love most about my product vs competitors.",
-  "Identify hidden opportunities to improve my Amazon listing.",
-];
+// welcome message
+const makeWelcomeMessage = (): UIMessage => ({
+  id: `welcome-${Date.now()}`,
+  role: "assistant",
+  parts: [{ type: "text", text: WELCOME_MESSAGE }],
+});
 
-export default function Page() {
-  // ✅ New AI SDK v5 useChat signature – no `input` here
-  const { messages, sendMessage, status, setMessages } = useChat();
+export default function Chat() {
+  const [isClient, setIsClient] = useState(false);
+  const [durations, setDurations] = useState<Record<string, number>>({});
+  const welcomeMessageShownRef = useRef(false);
 
-  // ✅ Manage input ourselves
-  const [input, setInput] = useState("");
+  const { messages, sendMessage, status, stop, setMessages } = useChat();
 
-  // derive loading state from status
-  const isLoading = status === "submitted" || status === "streaming";
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
-  const formRef = useRef<HTMLFormElement | null>(null);
+  useEffect(() => {
+    if (isClient && !welcomeMessageShownRef.current) {
+      setMessages([makeWelcomeMessage()]);
+      welcomeMessageShownRef.current = true;
+    }
+  }, [isClient, setMessages]);
 
-  const onClearChat = () => setMessages([]);
-
-  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-
-    // send the user message to the chat API
-    await sendMessage(input);
-    setInput("");
+  const handleDurationChange = (key: string, duration: number) => {
+    setDurations((prev) => ({ ...prev, [key]: duration }));
   };
 
-  const welcomeText =
-    WELCOME_MESSAGE ||
-    `Welcome to SellerSight ⚡ An advanced AI system engineered to analyze real customer feedback, uncover hidden performance drivers, and forecast the outcomes of inaction. I evaluate sentiment signals, competitive positioning, issue severity, and trajectory shifts to reveal the most decisive improvement opportunities.`;
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { message: "" },
+  });
+
+  function onSubmit(data: z.infer<typeof formSchema>) {
+    sendMessage({ text: data.message });
+    form.reset();
+  }
+
+  function clearChat() {
+    setMessages([makeWelcomeMessage()]);
+    setDurations({});
+    toast.success("New analysis started");
+  }
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-b from-white via-[#f5f7fb] to-[#e7f1ff] text-slate-900">
-      {/* Top nav bar with your logo / brand */}
-      <Header />
-
-      {/* Main content */}
-      <main className="flex-1 flex justify-center px-4 py-8">
-        <div className="grid w-full max-w-6xl gap-6 md:grid-cols-[minmax(0,2.3fr)_minmax(260px,1fr)]">
-          {/* ========== LEFT: CHAT CARD ========== */}
-          <section className="flex flex-col rounded-2xl bg-white/95 shadow-lg border border-slate-100 overflow-hidden">
-            {/* Chat header inside card */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-9 w-9 bg-slate-900 text-white">
-                  <AvatarFallback className="font-semibold">SS</AvatarFallback>
+    <div className="flex h-screen items-center justify-center bg-[#FAF7F2] text-[#0F1111] font-sans">
+      {/* AWS-style floating panel */}
+      <main className="w-full flex justify-center px-3">
+        <div className="w-full max-w-md rounded-3xl shadow-xl overflow-hidden bg-white border border-gray-200">
+          {/* Gradient header */}
+          <div className="bg-gradient-to-r from-[#4C6FFF] to-[#8A2EFF] px-5 py-4 text-white">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Avatar className="h-8 w-8 border border-white/40">
+                  <AvatarImage src="/sellersight-logo.png" />
+                  <AvatarFallback>SS</AvatarFallback>
                 </Avatar>
-                <div>
-                  <h1 className="text-lg font-semibold tracking-tight">
-                    Chat with SellerSight
-                  </h1>
-                  <p className="text-xs text-slate-500">
-                    Amazon Review Intelligence for Sellers
-                  </p>
+                <div className="flex flex-col">
+                  <span className="text-sm font-semibold">
+                    Ask {AI_NAME}
+                  </span>
+                  <span className="text-[11px] opacity-90">
+                    Get data-backed insights from Amazon reviews.
+                  </span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="rounded-full border-slate-300 px-4 py-1 text-xs font-medium"
-                  onClick={onClearChat}
-                >
-                  {CLEAR_CHAT_TEXT || "Clear chat"}
-                </Button>
-                <Button
-                  type="button"
-                  className="rounded-full bg-slate-900 px-4 py-1 text-xs font-medium text-white hover:bg-slate-800"
-                  onClick={onClearChat}
-                >
-                  + New analysis
-                </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 rounded-full bg-white/10 hover:bg-white/20 border border-white/30 text-xs text-white"
+                type="button"
+                onClick={clearChat}
+                title="Start new analysis"
+              >
+                <Plus className="h-3 w-3" />
+              </Button>
+            </div>
+
+            {/* Input inside header */}
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="mt-4"
+              id="chat-form"
+            >
+              <FieldGroup>
+                <Controller
+                  name="message"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel className="sr-only">Message</FieldLabel>
+                      <div className="relative">
+                        <Input
+                          {...field}
+                          placeholder="Ask a question about your ASIN or category…"
+                          className="h-10 w-full rounded-full border border-white/60 bg-white text-xs text-[#0F1111] pl-4 pr-10 shadow-sm focus:outline-none focus:ring-2 focus:ring-white"
+                          disabled={status === "streaming"}
+                          autoComplete="off"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                              e.preventDefault();
+                              form.handleSubmit(onSubmit)();
+                            }
+                          }}
+                        />
+                        {(status === "ready" || status === "error") && (
+                          <Button
+                            type="submit"
+                            disabled={!field.value.trim()}
+                            size="icon"
+                            className="absolute right-1 top-1 h-8 w-8 rounded-full bg-[#232F3E] hover:bg-[#111827] text-white shadow"
+                          >
+                            <ArrowUp className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {(status === "streaming" || status === "submitted") && (
+                          <Button
+                            type="button"
+                            size="icon"
+                            onClick={() => stop()}
+                            className="absolute right-1 top-1 h-8 w-8 rounded-full bg-white/80 text-[#0F1111]"
+                          >
+                            <Square className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </Field>
+                  )}
+                />
+              </FieldGroup>
+            </form>
+          </div>
+
+          {/* Body */}
+          <div className="flex flex-col bg-white">
+            {/* Quick-start buttons */}
+            <div className="px-5 pt-4 pb-2 space-y-2 text-xs text-[#374151] border-b border-gray-100">
+              <p className="font-medium text-[11px] uppercase tracking-wide text-[#6B7280]">
+                Want help getting started?
+              </p>
+              <div className="flex flex-col gap-2">
+                <QuickStartButton
+                  label="Analyze my product's reviews"
+                  prompt="Help me analyze reviews for my Amazon product and show top complaints and strengths."
+                  formSetValue={form.setValue}
+                />
+                <QuickStartButton
+                  label="Compare with a competitor ASIN"
+                  prompt="Compare my ASIN to a close competitor based on Amazon reviews and highlight gaps."
+                  formSetValue={form.setValue}
+                />
+                <QuickStartButton
+                  label="Find key issues hurting my rating"
+                  prompt="From recent reviews, identify the top issues hurting my star rating and how to fix them."
+                  formSetValue={form.setValue}
+                />
               </div>
             </div>
 
             {/* Messages area */}
-            <div className="flex-1 min-h-[320px] max-h-[65vh] overflow-y-auto bg-slate-50/80 px-6 py-4 space-y-4">
-              {/* Welcome bubble when empty */}
-              {!messages.length && (
-                <div className="flex gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-white text-sm">
-                    SS
-                  </div>
-                  <Card className="max-w-xl rounded-2xl bg-amber-50 border-amber-100">
-                    <CardContent className="px-4 py-3">
-                      <p className="text-sm leading-relaxed text-slate-800">
-                        {welcomeText}
-                      </p>
-                    </CardContent>
-                  </Card>
+            <div className="max-h-[430px] overflow-y-auto px-5 py-4">
+              {isClient ? (
+                <>
+                  <MessageWall
+                    messages={messages}
+                    status={status}
+                    durations={durations}
+                    onDurationChange={handleDurationChange}
+                  />
+                  {status === "submitted" && (
+                    <div className="flex justify-start max-w-3xl w-full mt-2">
+                      <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="flex justify-center w-full py-6">
+                  <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
                 </div>
               )}
-
-              <MessageWall
-                messages={messages}
-                ownerName={OWNER_NAME || "You"}
-                aiName={AI_NAME || "SellerSight"}
-              />
             </div>
 
-            {/* Input bar */}
-            <div className="border-t border-slate-200 bg-white px-4 py-3">
-              <form
-                ref={formRef}
-                onSubmit={onSubmit}
-                className="flex items-center gap-3"
-              >
-                <Input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Ask SellerSight about your ASIN’s reviews, complaints, or competitors…"
-                  className="flex-1 rounded-full bg-slate-50 border-slate-200 text-sm"
-                />
-                <Button
-                  type="submit"
-                  disabled={isLoading || !input.trim()}
-                  className="rounded-full px-4 py-2 text-sm font-semibold bg-amber-400 text-slate-900 hover:bg-amber-500 disabled:opacity-60"
-                >
-                  {isLoading ? "Analyzing…" : "Send"}
-                </Button>
-              </form>
+            {/* Footer */}
+            <div className="border-t border-gray-100 px-5 py-3 text-[11px] text-gray-500 flex justify-between items-center">
+              <span>© {new Date().getFullYear()} {OWNER_NAME}</span>
+              <span className="space-x-1">
+                <Link href="/terms" className="underline">
+                  Terms
+                </Link>
+                <span>·</span>
+                <Link href="https://ringel.ai" className="underline">
+                  Powered by Ringel.AI
+                </Link>
+              </span>
             </div>
-          </section>
-
-          {/* ========== RIGHT: CONTEXT / HELP PANEL ========== */}
-          <aside className="flex flex-col gap-4">
-            <Card className="bg-white/95 border-slate-100 shadow-md">
-              <CardContent className="px-5 py-4">
-                <h2 className="text-sm font-semibold mb-2">
-                  What SellerSight can do
-                </h2>
-                <ul className="space-y-1.5 text-xs text-slate-600">
-                  <li>• Break down sentiment across your reviews.</li>
-                  <li>• Surface top complaints and risk areas.</li>
-                  <li>• Compare your ASIN against key competitors.</li>
-                  <li>• Highlight hidden opportunities to improve ranking.</li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white/95 border-slate-100 shadow-md">
-              <CardContent className="px-5 py-4">
-                <h2 className="text-sm font-semibold mb-2">
-                  Try asking SellerSight
-                </h2>
-                <div className="flex flex-col gap-2">
-                  {PROMPTS.map((prompt) => (
-                    <div
-                      key={prompt}
-                      className="text-xs text-slate-700 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2"
-                    >
-                      {prompt}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-slate-900 text-slate-50 border-slate-900 shadow-md">
-              <CardContent className="px-5 py-4">
-                <p className="text-xs leading-relaxed">
-                  Paste a single ASIN, a product URL, or a list of competitors.
-                  SellerSight will read the reviews and come back with insights
-                  you can act on today.
-                </p>
-              </CardContent>
-            </Card>
-          </aside>
+          </div>
         </div>
       </main>
     </div>
+  );
+}
+
+function QuickStartButton(props: {
+  label: string;
+  prompt: string;
+  formSetValue: (name: "message", value: string) => void;
+}) {
+  const { label, prompt, formSetValue } = props;
+  return (
+    <button
+      type="button"
+      onClick={() => formSetValue("message", prompt)}
+      className="w-full rounded-xl border border-[#D1D5DB] bg-gradient-to-r from-[#E5F0FF] to-[#F5E8FF] px-3 py-2 text-left text-[11px] font-medium text-[#111827] hover:border-[#A5B4FC] hover:shadow-sm transition"
+    >
+      {label}
+    </button>
   );
 }
